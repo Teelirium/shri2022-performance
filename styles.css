@@ -106,8 +106,8 @@ html, body {
     }
 
     .header__links_opened {
-        display: flex;
         visibility: visible;
+        display: flex;
         animation: showMenu .3s ease-in-out 1;
         animation-fill-mode: both;
     }

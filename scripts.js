@@ -1,23 +1,40 @@
 (() => {
-    function bind(nodes, event, handler) {
-        nodes.forEach(node => {
-            node.addEventListener(event, handler);
-        });
-    }
-
     function makeTabs(node) {
-        let selected = node.querySelector('.section__tab_active').dataset.id;
+        let selectedId = node.querySelector('.section__tab_active').dataset.id;
         const tabs = node.querySelectorAll('.section__tab');
-        const list = Array.from(tabs).map(node => node.dataset.id);
         const select = node.querySelector('.section__select');
+        const panels = node.querySelectorAll('.section__panel');
+
+        const list = [];
+        const tabMap = new Map();
+        const panelMap = new Map();
+
+        for (let tab of tabs) {
+            tabMap.set(tab.dataset.id, tab);
+            list.push(tab.dataset.id);
+    
+            tab.addEventListener('click', event => {
+                selectTab(event.target.dataset.id);
+            });
+            
+            tab.addEventListener('keydown', switchWithArrows);
+        }
+
+        for (let panel of panels) {
+            panelMap.set(panel.dataset.id, panel);
+        }
+
+        select.addEventListener('input', () => {
+            selectTab(select.value);
+        });
 
         function selectTab(newId) {
-            const newTab = node.querySelector(`.section__tab[data-id=${newId}]`);
-            const newPanel = node.querySelector(`.section__panel[data-id=${newId}]`);
-            const oldTab = node.querySelector('.section__tab_active');
-            const oldPanel = node.querySelector('.section__panel:not(.section__panel_hidden)');
-
-            selected = newId;
+            const newTab = tabMap.get(newId);
+            const newPanel = panelMap.get(newId);
+            const oldTab = tabMap.get(selectedId);
+            const oldPanel = panelMap.get(selectedId);
+            
+            selectedId = newId;
 
             oldTab.classList.remove('section__tab_active');
             oldTab.setAttribute('aria-selected', 'false');
@@ -37,21 +54,12 @@
             select.value = newId;
         }
 
-        select.addEventListener('input', () => {
-            selectTab(select.value);
-        });
-
-        bind(tabs, 'click', event => {
-            const newId = event.target.dataset.id;
-            selectTab(newId);
-        });
-
-        bind(tabs, 'keydown', event => {
+        function switchWithArrows(event) {
             if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
                 return;
             }
 
-            let index = list.indexOf(selected);
+            let index = list.indexOf(selectedId);
             if (event.which === 37) {
                 // left
                 --index;
@@ -67,26 +75,27 @@
             } else {
                 return;
             }
-
+    
             if (index >= list.length) {
                 index = 0;
             } else if (index < 0) {
                 index = list.length - 1;
             }
-
+    
             selectTab(list[index]);
             event.preventDefault();
-        });
+        }
     }
 
     function makeMenu(node) {
         let expanded = false;
         const links = document.querySelector('.header__links');
+        const text = node.querySelector('.header__menu-text');
 
         node.addEventListener('click', () => {
             expanded = !expanded;
-            node.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-            node.querySelector('.header__menu-text').textContent = expanded ? 'Закрыть меню' : 'Открыть меню';
+            node.setAttribute('aria-expanded', expanded);
+            text.textContent = expanded ? 'Закрыть меню' : 'Открыть меню';
             links.classList.toggle('header__links_opened', expanded);
             links.classList.add('header__links-toggled');
         });
