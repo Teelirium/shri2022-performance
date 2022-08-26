@@ -4,15 +4,18 @@
         const tabs = node.querySelectorAll('.section__tab');
         const select = node.querySelector('.section__select');
         const panels = node.querySelectorAll('.section__panel');
-
+        
         const list = [];
         const tabMap = new Map();
         const panelMap = new Map();
+        const indexes = new Map();
 
+        let i = 0;
         for (let tab of tabs) {
             tabMap.set(tab.dataset.id, tab);
+            indexes.set(tab.dataset.id, i++);
             list.push(tab.dataset.id);
-    
+
             tab.addEventListener('click', event => {
                 selectTab(event.target.dataset.id);
             });
@@ -59,21 +62,22 @@
                 return;
             }
 
-            let index = list.indexOf(selectedId);
-            if (event.which === 37) {
-                // left
-                --index;
-            } else if (event.which === 39) {
-                // right
-                ++index;
-            } else if (event.which === 36) {
-                // home
-                index = 0;
-            } else if (event.which === 35) {
-                // end
-                index = list.length - 1;
-            } else {
-                return;
+            let index = indexes.get(selectedId);
+            switch (event.which) {
+                case 37:
+                    --index; //left
+                    break;
+                case 39:
+                    ++index; //right
+                    break;
+                case 36:
+                    index = 0; //home
+                    break;
+                case 35:
+                    index = list.length - 1; //end
+                    break;
+                default:
+                    return; 
             }
     
             if (index >= list.length) {
@@ -95,7 +99,7 @@
         node.addEventListener('click', () => {
             expanded = !expanded;
             node.setAttribute('aria-expanded', expanded);
-            text.textContent = expanded ? 'Закрыть меню' : 'Открыть меню';
+            text.innerHTML = expanded ? 'Закрыть меню' : 'Открыть меню';
             links.classList.toggle('header__links_opened', expanded);
             links.classList.add('header__links-toggled');
         });
